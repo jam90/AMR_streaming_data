@@ -10,9 +10,9 @@ Pipeline de datos para la monitorización en tiempo real de un robot móvil aut�
 MIR250 (REST API)
        │
        ▼
- Python Producer  ──►  Apache Kafka  ──►  Python Consumer  ──►  InfluxDB  ──►  Grafana
-       │                                                           │
-       └── Node-RED (flujos alternativos) ────────────────────────►┘
+       └──► Python Producer  ──►  Apache Kafka  ──►  Python Consumer  ──►  InfluxDB  ──►  Grafana
+       │                                                                     │
+       └── Node-RED (flujos alternativos) ──────────────────────────────────►┘
 ```
 
 ### Topics de Kafka
