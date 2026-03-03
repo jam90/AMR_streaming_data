@@ -11,8 +11,8 @@ MIR250 (REST API)
        │
        ▼
  Python Producer  ──►  Apache Kafka  ──►  Python Consumer  ──►  InfluxDB  ──►  Grafana
-       │                                                                          │
-       └── Node-RED (flujos alternativos) ──────────────────────────────────────►┘
+       │                                                           │
+       └── Node-RED (flujos alternativos) ────────────────────────►┘
 ```
 
 ### Topics de Kafka
