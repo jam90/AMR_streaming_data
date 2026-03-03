@@ -1,0 +1,808 @@
+[
+    {
+        "id": "cbb5e231b7e02f04",
+        "type": "tab",
+        "label": "MIR 4.0 - MEC - Batería + misiones",
+        "disabled": false,
+        "info": "Click en el menu hamburguesa",
+        "env": [
+            {
+                "name": "IP_MIR250",
+                "value": "192.168.250.34",
+                "type": "str"
+            }
+        ]
+    },
+    {
+        "id": "cea548858782587c",
+        "type": "inject",
+        "z": "cbb5e231b7e02f04",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 200,
+        "wires": [
+            [
+                "b3fbaa7fc01f29bd",
+                "0261da774a20602d",
+                "fcb677e8f4e4c379"
+            ]
+        ]
+    },
+    {
+        "id": "f5a5b250e16fd8a6",
+        "type": "http request",
+        "z": "cbb5e231b7e02f04",
+        "name": "Status",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "Authorization",
+                "keyValue": "",
+                "valueType": "other",
+                "valueValue": "Basic amFtOjAzYWM2NzQyMTZmM2UxNWM3NjFlZTFhNWUyNTVmMDY3OTUzNjIzYzhiMzg4YjQ0NTllMTNmOTc4ZDdjODQ2ZjQ="
+            },
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            }
+        ],
+        "x": 490,
+        "y": 140,
+        "wires": [
+            [
+                "92b3993fdd6d5b4b",
+                "784833c14658753c"
+            ]
+        ]
+    },
+    {
+        "id": "92b3993fdd6d5b4b",
+        "type": "function",
+        "z": "cbb5e231b7e02f04",
+        "name": "Sacar bateria",
+        "func": "msg.topic = \"InfluxData\"\n\nvar bateria = msg.payload.battery_percentage\nmsg.payload = {\n    \"Battery\": bateria\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 200,
+        "wires": [
+            [
+                "a60c3490117a81e3",
+                "a59b9689ce8508a5"
+            ]
+        ]
+    },
+    {
+        "id": "a59b9689ce8508a5",
+        "type": "debug",
+        "z": "cbb5e231b7e02f04",
+        "name": "bateria",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 910,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "87aa48315e96bef0",
+        "type": "comment",
+        "z": "cbb5e231b7e02f04",
+        "name": "Definición IPs - leer aquí",
+        "info": "Se define la ip del MIR250 y de INFLUXDB como variable del servidor.\nAsí puede cambiarse más facilmente.",
+        "x": 210,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "b3fbaa7fc01f29bd",
+        "type": "function",
+        "z": "cbb5e231b7e02f04",
+        "name": "SET URL Status",
+        "func": "msg.url = \"http://\" + env.get(\"IP_MIR250\") + \"/api/v2.0.0/status\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 200,
+        "wires": [
+            [
+                "f5a5b250e16fd8a6"
+            ]
+        ]
+    },
+    {
+        "id": "2dc823460dca3079",
+        "type": "comment",
+        "z": "cbb5e231b7e02f04",
+        "name": "Batería",
+        "info": "Se mira el status y de ahí se saca la batería",
+        "x": 270,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "784833c14658753c",
+        "type": "rbe",
+        "z": "cbb5e231b7e02f04",
+        "name": "",
+        "func": "rbe",
+        "gap": "",
+        "start": "",
+        "inout": "out",
+        "septopics": true,
+        "property": "payload.mission_queue_id",
+        "topi": "topic",
+        "x": 470,
+        "y": 280,
+        "wires": [
+            [
+                "a210690b5d2e187e"
+            ]
+        ]
+    },
+    {
+        "id": "fcb677e8f4e4c379",
+        "type": "function",
+        "z": "cbb5e231b7e02f04",
+        "name": "Generar número queue_id",
+        "func": "// Crear una lista con los posibles valores\nvar valores = [50,52,52, null];\n\n// Escoger un valor aleatorio de la lista\nvar indiceAleatorio = Math.floor(Math.random() * valores.length);\nmsg.payload = {\"mission_queue_id\": valores[indiceAleatorio]};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 200,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4435945cd6452625",
+        "type": "comment",
+        "z": "cbb5e231b7e02f04",
+        "name": "Pruebas con robot parado",
+        "info": "",
+        "x": 230,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "a210690b5d2e187e",
+        "type": "function",
+        "z": "cbb5e231b7e02f04",
+        "name": "Lectura misiones",
+        "func": "var prev_queue_id = flow.get(\"prev_queue_id\") || null;\nvar current_queue_id = msg.payload.mission_queue_id;\n\nvar outputMisionActual = null;\nvar outputMisionTerminada = null;\n\n// Si el valor actual es null\nif(current_queue_id === null) {\n    outputMisionActual = {\"payload\": {\"mision_actual\": \"Robot sin misión\"}};\n\n    if (prev_queue_id !== null) {\n        outputMisionTerminada = {\"payload\": {\"mision_terminada\": prev_queue_id}};\n    }\n} else {\n    // Si hay una misión actual\n    outputMisionActual = {\"payload\": {\"mision_actual\": current_queue_id}};\n    \n    // Si hubo un cambio desde la última vez\n    if(prev_queue_id !== null && prev_queue_id !== current_queue_id) {\n        outputMisionTerminada = {\"payload\": {\"mision_terminada\": prev_queue_id}};\n    }\n}\n\n// Guarda el valor actual para la próxima vez\nflow.set(\"prev_queue_id\", current_queue_id);\n\nreturn [outputMisionActual, outputMisionTerminada];",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 340,
+        "wires": [
+            [
+                "fc911608e2b2de3e",
+                "30bd5f2acc9af4cc"
+            ],
+            [
+                "fb68e8490ed040f5"
+            ]
+        ]
+    },
+    {
+        "id": "fb68e8490ed040f5",
+        "type": "function",
+        "z": "cbb5e231b7e02f04",
+        "name": "URL Terminada",
+        "func": "// Obtener el valor del mensaje entrante\nvar valor = msg.payload.mision_terminada;\n\n\n// Construir la URL con el número de entrada\nvar urlBase = \"http://\" + env.get(\"IP_MIR250\") + \"/api/v2.0.0/mission_queue/\";\n\nvar urlCompleta = urlBase + valor;\n\n// Guardar la URL modificada en el mensaje\nmsg.url = urlCompleta;\n\nif (valor !== null) {\n    return msg; // Si el payload no es null, permite que el mensaje continúe\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 420,
+        "wires": [
+            [
+                "942e201417e5b092"
+            ]
+        ]
+    },
+    {
+        "id": "942e201417e5b092",
+        "type": "http request",
+        "z": "cbb5e231b7e02f04",
+        "name": "Mission queue API",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "Authorization",
+                "keyValue": "",
+                "valueType": "other",
+                "valueValue": "Basic ZGlzdHJpYnV0b3I6NjJmMmYwZjFlZmYxMGQzMTUyYzk1ZjZmMDU5NjU3NmU0ODJiYjhlNDQ4MDY0MzNmNGNmOTI5NzkyODM0YjAxNA=="
+            },
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            }
+        ],
+        "x": 530,
+        "y": 440,
+        "wires": [
+            [
+                "d081f10b77f17b0a"
+            ]
+        ]
+    },
+    {
+        "id": "d081f10b77f17b0a",
+        "type": "function",
+        "z": "cbb5e231b7e02f04",
+        "name": "Sacar código guid terminada + tiempos",
+        "func": "msg.topic = \"Get Mission GUID\"\nvar state = msg.payload.state\nvar nombre_mision_finish\nvar start = msg.payload.started\nvar finish = msg.payload.finished\nvar total = Date.parse(finish) - Date.parse(start)\n\n\nnombre_mision_finish = msg.payload.mission_id;\n\nmsg.payload = {\n    \"Misión_terminada\": nombre_mision_finish, \n    \"Tiempo_inicio\": start, \"Tiempo_final\": finish, \n    \"Tiempo_trabajo\": total / 1000, \n    state\n}\n\n\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 790,
+        "y": 400,
+        "wires": [
+            [
+                "cb40f70bcc14615d"
+            ]
+        ]
+    },
+    {
+        "id": "f19de18d4b811d9d",
+        "type": "inject",
+        "z": "cbb5e231b7e02f04",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 90,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0261da774a20602d",
+        "type": "function",
+        "z": "cbb5e231b7e02f04",
+        "name": "Set URL Mission",
+        "func": "msg.topic = \"Lista misiones\";\nmsg.url = 'http://' + env.get(\"IP_MIR250\") + '/api/v2.0.0/missions';\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 290,
+        "y": 500,
+        "wires": [
+            [
+                "4e013ae1a0eba508"
+            ]
+        ]
+    },
+    {
+        "id": "4e013ae1a0eba508",
+        "type": "http request",
+        "z": "cbb5e231b7e02f04",
+        "name": "Missions",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "Authorization",
+                "keyValue": "",
+                "valueType": "other",
+                "valueValue": "Basic ZGlzdHJpYnV0b3I6NjJmMmYwZjFlZmYxMGQzMTUyYzk1ZjZmMDU5NjU3NmU0ODJiYjhlNDQ4MDY0MzNmNGNmOTI5NzkyODM0YjAxNA=="
+            },
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            }
+        ],
+        "x": 480,
+        "y": 500,
+        "wires": [
+            [
+                "cb40f70bcc14615d",
+                "0d6e69315f59dee5",
+                "5b4295064083ed51"
+            ]
+        ]
+    },
+    {
+        "id": "5fbb46ccc4064ecf",
+        "type": "debug",
+        "z": "cbb5e231b7e02f04",
+        "name": "Union",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1310,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "5b4295064083ed51",
+        "type": "debug",
+        "z": "cbb5e231b7e02f04",
+        "name": "Lista misiones",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 660,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "27d64d6bcf747985",
+        "type": "function",
+        "z": "cbb5e231b7e02f04",
+        "name": "Find Mission (Done, Aborted)",
+        "func": "// Tomar el guid de la misión directamente del payload del mensaje entrante\n\nvar missionGuid = msg.payload[\"Get Mission GUID\"].payload[\"Misión_terminada\"]; \n// Sacar state a var\nvar state = msg.payload[\"Get Mission GUID\"].payload.state\n// Definir nombre_mision\nvar nombre_mision\n// Tomar la lista de misiones del payload del mensaje entrante\nvar missions = msg.payload[\"Lista misiones\"].payload;\n\n// Buscar la misión en la lista usando el guid\nvar mission = missions.find(m => m.guid === missionGuid);\n//Vars tiempo\nvar tiempo_inicio = msg.payload[\"Get Mission GUID\"].payload.Tiempo_inicio\nvar tiempo_final = msg.payload[\"Get Mission GUID\"].payload.Tiempo_final\nvar tiempo_trabajo = msg.payload[\"Get Mission GUID\"].payload.Tiempo_trabajo\n\n// Si la misión se encuentra, establecer el nombre de la misión en el payload de salida. \n// Si el estado era Aborted, le pone Aborted delante.\n   \nif (mission) {\n    nombre_mision = mission.name;\n    if (state === \"Aborted\") {\n        nombre_mision = \"(ABORTED) \" + nombre_mision\n    }\n    msg.payload = {\n        \"nombre_mision\": nombre_mision,\n        \"tiempo_inicio\": tiempo_inicio,\n        \"tiempo_final\": tiempo_final,\n        \"tiempo_trabajo\": tiempo_trabajo,\n    }\n\n} else {\n    msg.payload = {\n        \"nombre_mision\": \"Misión no encontrada\",\n        \"tiempo_inicio\": tiempo_inicio,\n        \"tiempo_final\": tiempo_final,\n        \"tiempo_trabajo\": tiempo_trabajo,    \n    } \n}\n\n\n// Devolver el mensaje modificado\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1060,
+        "y": 500,
+        "wires": [
+            [
+                "5fbb46ccc4064ecf",
+                "05d658283ef57daa"
+            ]
+        ]
+    },
+    {
+        "id": "cb40f70bcc14615d",
+        "type": "join",
+        "z": "cbb5e231b7e02f04",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "",
+        "propertyType": "full",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": true,
+        "accumulate": false,
+        "timeout": "",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 810,
+        "y": 500,
+        "wires": [
+            [
+                "27d64d6bcf747985"
+            ]
+        ]
+    },
+    {
+        "id": "677f873f811f5f92",
+        "type": "comment",
+        "z": "cbb5e231b7e02f04",
+        "name": "Se saca lista de todas las misiones que existen",
+        "info": "",
+        "x": 300,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "30bd5f2acc9af4cc",
+        "type": "switch",
+        "z": "cbb5e231b7e02f04",
+        "name": "Robot sin misión",
+        "property": "payload.mision_actual",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "Robot sin misión",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 740,
+        "y": 260,
+        "wires": [
+            [
+                "a78d31a953065731"
+            ]
+        ]
+    },
+    {
+        "id": "fc911608e2b2de3e",
+        "type": "function",
+        "z": "cbb5e231b7e02f04",
+        "name": "URL Actual",
+        "func": "// Obtener el valor del mensaje entrante\nvar valor = msg.payload.mision_actual;\n\n\n// Construir la URL con el número de entrada\nvar urlBase = \"http://\" + env.get(\"IP_MIR250\") + \"/api/v2.0.0/mission_queue/\";\n\nvar urlCompleta = urlBase + valor;\n\n// Guardar la URL modificada en el mensaje\nmsg.url = urlCompleta;\n\nif (valor !== \"Robot sin misión\") {\n    return msg; // Si el payload no es ese string, permite que el mensaje continúe\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 730,
+        "y": 300,
+        "wires": [
+            [
+                "1d905402b315e5f3"
+            ]
+        ]
+    },
+    {
+        "id": "a78d31a953065731",
+        "type": "influxdb out",
+        "z": "cbb5e231b7e02f04",
+        "influxdb": "cefbf44aade52849",
+        "name": "MIR_Influx_Misión Actual",
+        "measurement": "Misiones",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "somorrostro",
+        "bucket": "pruebas-MIR",
+        "x": 1190,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "1d905402b315e5f3",
+        "type": "http request",
+        "z": "cbb5e231b7e02f04",
+        "name": "Mission queue API",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "Authorization",
+                "keyValue": "",
+                "valueType": "other",
+                "valueValue": "Basic ZGlzdHJpYnV0b3I6NjJmMmYwZjFlZmYxMGQzMTUyYzk1ZjZmMDU5NjU3NmU0ODJiYjhlNDQ4MDY0MzNmNGNmOTI5NzkyODM0YjAxNA=="
+            },
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            }
+        ],
+        "x": 930,
+        "y": 300,
+        "wires": [
+            [
+                "4661a3ca04222379"
+            ]
+        ]
+    },
+    {
+        "id": "4661a3ca04222379",
+        "type": "function",
+        "z": "cbb5e231b7e02f04",
+        "name": "Sacar código guid actual",
+        "func": "msg.topic = \"Get Mission GUID\"\nvar state = msg.payload.state\nvar nombre_mision_actual\nvar start = msg.payload.started\n\n\n    // valor = valor \nnombre_mision_actual = msg.payload.mission_id;\nmsg.payload = {\n    \"Nombre_misión_actual\": nombre_mision_actual,\n    state,\n    \"Tiempo_inicio\": start\n}\n\n\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1070,
+        "y": 360,
+        "wires": [
+            [
+                "0d6e69315f59dee5"
+            ]
+        ]
+    },
+    {
+        "id": "0d6e69315f59dee5",
+        "type": "join",
+        "z": "cbb5e231b7e02f04",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "",
+        "propertyType": "full",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 1190,
+        "y": 420,
+        "wires": [
+            [
+                "1145af598ad729c6"
+            ]
+        ]
+    },
+    {
+        "id": "1145af598ad729c6",
+        "type": "function",
+        "z": "cbb5e231b7e02f04",
+        "name": "Dar nombre a misión actual",
+        "func": "var missionGuid = msg.payload[\"Get Mission GUID\"].payload[\"Nombre_misión_actual\"];\n// Sacar state a var\nvar state = msg.payload[\"Get Mission GUID\"].payload.state\n// Definir nombre_mision\nvar nombre_mision\n// Tomar la lista de misiones del payload del mensaje entrante\nvar missions = msg.payload[\"Lista misiones\"].payload;\n\n// Buscar la misión en la lista usando el guid\nvar mission = missions.find(m => m.guid === missionGuid);\n\nif (mission) {\n    msg.payload = {\n        \"mision_actual\": mission.name,\n        \"Tiempo_inicio\": msg.payload[\"Get Mission GUID\"].payload.Tiempo_inicio\n    }\n} else {\n    msg.payload = {\n        missionGuid\n    }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1380,
+        "y": 340,
+        "wires": [
+            [
+                "fc2b3245295a274e",
+                "cce9816d4a22fe3e"
+            ]
+        ]
+    },
+    {
+        "id": "cce9816d4a22fe3e",
+        "type": "rbe",
+        "z": "cbb5e231b7e02f04",
+        "name": "",
+        "func": "rbe",
+        "gap": "",
+        "start": "",
+        "inout": "out",
+        "septopics": true,
+        "property": "payload",
+        "topi": "topic",
+        "x": 1510,
+        "y": 440,
+        "wires": [
+            [
+                "f5148eac882c8123"
+            ]
+        ]
+    },
+    {
+        "id": "fc2b3245295a274e",
+        "type": "debug",
+        "z": "cbb5e231b7e02f04",
+        "name": "Mision actual",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1610,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "5b68a7dc4319842f",
+        "type": "rbe",
+        "z": "cbb5e231b7e02f04",
+        "name": "",
+        "func": "rbe",
+        "gap": "",
+        "start": "",
+        "inout": "out",
+        "septopics": true,
+        "property": "payload",
+        "topi": "topic",
+        "x": 1090,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f5148eac882c8123",
+        "type": "influxdb out",
+        "z": "cbb5e231b7e02f04",
+        "influxdb": "cefbf44aade52849",
+        "name": "MIR_Influx_Misión Actual",
+        "measurement": "Misiones",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "somorrostro",
+        "bucket": "pruebas-MIR",
+        "x": 1730,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "05d658283ef57daa",
+        "type": "influxdb out",
+        "z": "cbb5e231b7e02f04",
+        "influxdb": "cefbf44aade52849",
+        "name": "MIR_Influx_mision_terminada",
+        "measurement": "Misiones",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "somorrostro",
+        "bucket": "pruebas-MIR",
+        "x": 1370,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "a60c3490117a81e3",
+        "type": "influxdb out",
+        "z": "cbb5e231b7e02f04",
+        "influxdb": "cefbf44aade52849",
+        "name": "MIR_Influx_Bateria",
+        "measurement": "Datos_MIR",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "somorrostro",
+        "bucket": "pruebas-MIR",
+        "x": 870,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "937b29e76cfe974d",
+        "type": "join",
+        "z": "cbb5e231b7e02f04",
+        "name": "",
+        "mode": "auto",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": "false",
+        "timeout": "",
+        "count": "",
+        "reduceRight": false,
+        "x": 850,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "cefbf44aade52849",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": "8086",
+        "protocol": "http",
+        "database": "database",
+        "name": "Influx_JAM90",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://localhost:8086",
+        "timeout": "",
+        "rejectUnauthorized": true
+    }
+]

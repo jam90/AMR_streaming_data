@@ -1,0 +1,234 @@
+[
+    {
+        "id": "606add129aa2b373",
+        "type": "tab",
+        "label": "MIR - Adicionales",
+        "disabled": false,
+        "info": "",
+        "env": [
+            {
+                "name": "IP_MIR250",
+                "value": "10.61.208.124",
+                "type": "str"
+            }
+        ]
+    },
+    {
+        "id": "4b5c5446fe3528f9",
+        "type": "inject",
+        "z": "606add129aa2b373",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 120,
+        "wires": [
+            [
+                "262d2fc61cce6f78"
+            ]
+        ]
+    },
+    {
+        "id": "262d2fc61cce6f78",
+        "type": "function",
+        "z": "606add129aa2b373",
+        "name": "SET URL Status",
+        "func": "msg.url = \"http://\" + env.get(\"IP_MIR250\") + \"/api/v2.0.0/status\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 120,
+        "wires": [
+            [
+                "a2524e7112fcdbaf"
+            ]
+        ]
+    },
+    {
+        "id": "cc06959115abb406",
+        "type": "function",
+        "z": "606add129aa2b373",
+        "name": "Lectura misiones",
+        "func": "var prev_queue_id = flow.get(\"prev_queue_id\") || null;\nvar current_queue_id = msg.payload.mission_queue_id;\n\nvar outputMisionActual = null;\nvar outputMisionTerminada = null;\n\n// Si el valor actual es null\nif(current_queue_id === null) {\n    outputMisionActual = {\"payload\": {\"mision_actual\": \"Robot sin misión\"}};\n\n    if (prev_queue_id !== null) {\n        outputMisionTerminada = {\"payload\": {\"mision_terminada\": prev_queue_id}};\n    }\n} else {\n    // Si hay una misión actual\n    outputMisionActual = {\"payload\": {\"mision_actual\": current_queue_id}};\n    \n    // Si hubo un cambio desde la última vez\n    if(prev_queue_id !== null && prev_queue_id !== current_queue_id) {\n        outputMisionTerminada = {\"payload\": {\"mision_terminada\": prev_queue_id}};\n    }\n}\n\n// Guarda el valor actual para la próxima vez\nflow.set(\"prev_queue_id\", current_queue_id);\n\nreturn [outputMisionActual, outputMisionTerminada];",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 120,
+        "wires": [
+            [
+                "db0fd338f0666dd6"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "db0fd338f0666dd6",
+        "type": "function",
+        "z": "606add129aa2b373",
+        "name": "Calculo actividad",
+        "func": "// Variables de estado\nvar estadoActual = msg.payload.mision_actual === \"Robot sin misión\" ? \"Inactivo\" : \"Activo\";\nvar estadoAnterior = flow.get(\"estadoRobot\") || null;\nvar timestamp = new Date().getTime();\nvar ultimoTimestamp = flow.get(\"ultimoTimestamp\") || timestamp;\n\n// Calcular duración desde el último ciclo (no acumulativa)\nvar duracionCiclo = timestamp - ultimoTimestamp;\n\n// Si hay cambio de estado o es primera ejecución\nif (estadoActual !== estadoAnterior) {\n    // Registrar evento de cambio de estado si no es primera ejecución\n    if (estadoAnterior !== null) {\n        var msgCambio = {\n            topic: \"cambio_estado\",\n            payload: {\n                estado: estadoAnterior,\n                estado_nuevo: estadoActual,\n                duracion: duracionCiclo,\n                tiempo_inicio: ultimoTimestamp,\n                tiempo_fin: timestamp,\n                tipo: \"cambio\"\n            }\n        };\n        \n        // Actualizar estado\n        flow.set(\"estadoRobot\", estadoActual);\n        \n        // Guardar este timestamp para el próximo ciclo\n        flow.set(\"ultimoTimestamp\", timestamp);\n        \n        return msgCambio;\n    }\n    \n    // Primera ejecución\n    flow.set(\"estadoRobot\", estadoActual);\n}\n\n// Para todas las actualizaciones normales\nmsg.payload = {\n    estado: estadoActual,\n    duracion: duracionCiclo,  // Duración desde el último ciclo\n    tiempo_inicio: ultimoTimestamp,\n    tiempo_fin: timestamp,\n    tipo: \"actualizacion\"\n};\n\n// Actualizar timestamp para el próximo ciclo\nflow.set(\"ultimoTimestamp\", timestamp);\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 220,
+        "wires": [
+            [
+                "683b10ab3773bf96"
+            ]
+        ]
+    },
+    {
+        "id": "a9ea230936c96495",
+        "type": "influxdb out",
+        "z": "606add129aa2b373",
+        "influxdb": "cefbf44aade52849",
+        "name": "MIR_Influx_Actividad",
+        "measurement": "Estado_Robot",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "somorrostro",
+        "bucket": "pruebas-MIR",
+        "x": 900,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "4fc74e535f77fe9f",
+        "type": "debug",
+        "z": "606add129aa2b373",
+        "name": "Actividad",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 900,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "a2524e7112fcdbaf",
+        "type": "http request",
+        "z": "606add129aa2b373",
+        "name": "Status",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "Authorization",
+                "keyValue": "",
+                "valueType": "other",
+                "valueValue": "Basic amFtOjAzYWM2NzQyMTZmM2UxNWM3NjFlZTFhNWUyNTVmMDY3OTUzNjIzYzhiMzg4YjQ0NTllMTNmOTc4ZDdjODQ2ZjQ="
+            },
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            }
+        ],
+        "x": 590,
+        "y": 120,
+        "wires": [
+            [
+                "cc06959115abb406"
+            ]
+        ]
+    },
+    {
+        "id": "683b10ab3773bf96",
+        "type": "function",
+        "z": "606add129aa2b373",
+        "name": "Limpiar datos influxdb",
+        "func": "var estadoActual = msg.payload.estado;\nvar duracion = msg.payload.duracion;\n\n// Crear un nuevo objeto payload solo con los campos necesarios\nmsg.payload = {\n    estado: estadoActual,\n    duracion: duracion\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 220,
+        "wires": [
+            [
+                "4fc74e535f77fe9f",
+                "a9ea230936c96495"
+            ]
+        ]
+    },
+    {
+        "id": "729c0ecd321da9d3",
+        "type": "comment",
+        "z": "606add129aa2b373",
+        "name": "Activo/Inactivo?",
+        "info": "",
+        "x": 280,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "da55026671a388ee",
+        "type": "comment",
+        "z": "606add129aa2b373",
+        "name": "Distancia recorrida",
+        "info": "",
+        "x": 290,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "cefbf44aade52849",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": "8086",
+        "protocol": "http",
+        "database": "database",
+        "name": "Influx_JAM90",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://localhost:8086",
+        "timeout": "",
+        "rejectUnauthorized": true
+    }
+]
