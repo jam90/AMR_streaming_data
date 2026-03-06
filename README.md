@@ -1,6 +1,7 @@
 # MIR250 · Monitorización en tiempo real con Kafka, InfluxDB y Grafana
 
 Pipeline de datos para la monitorización en tiempo real de un robot móvil autónomo **MIR250**. El sistema captura datos de batería y estado de misiones a través de la API REST del robot, los distribuye mediante **Apache Kafka**, los almacena en **InfluxDB** y los visualiza en **Grafana**. También incluye flujos equivalentes en **Node-RED**.
+Este proyecto ha sido desarrollado en un entorno educativo, por lo que ciertos pasos pueden ser distintos de los que se darían a nivel industrial.
 
 ---
 
@@ -73,13 +74,13 @@ pip install kafka-python influxdb-client requests
 
 - **Apache Kafka** corriendo en `localhost:9092`
 - **InfluxDB 2.x** corriendo en `localhost:8086`
-- **MIR250** accesible por red (IP por defecto: `192.168.250.34`)
-
+- **MIR250** accesible por red
+- **Grafana** corriendo en `localhost:3000`
 ---
 
 ## Configuración
 
-Antes de ejecutar los scripts, ajusta las siguientes variables en cada archivo:
+Antes de ejecutar los scripts, es necesario realizar la instalación de InfluxDB, Grafana, node-red y Kafka, que se explica en los distintos documentos. Además, debes ajustar las siguientes variables en cada archivo:
 
 ```python
 # IP del robot
